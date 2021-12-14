@@ -20,7 +20,7 @@ import psutil
 import math
 import redis
 
-#this is from my laptop
+#tokens
 
 redis_server = redis.Redis()
 AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
@@ -29,6 +29,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
+queue_open = True
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
 warning_loopt = itertools.cycle(["!", "¡"])
@@ -149,73 +150,76 @@ async def on_command_error(ctx, error):
 @bot.command(name = "trianglify")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def trianglify(ctx):
-    channel = ctx.channel
-    await ctx.send("Send the file you would like to trianglify. Supported image types: PNG, JPG, JPEG, BMP, SVG")
-    # check if channel is correct and author is the same
-    def check(au):
-        def i_check(m):
-            return m.channel == channel and m.author == au
-        return i_check
-    try:
-        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
-        # check if message contains attachment
-        if msg.attachments:
-            # check if attachment is an image: png, jpg, jpeg, bmp, or svg
-            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
-                if not os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
-                    # save the image for the file path
-                    await msg.attachments[0].save("./userImages/image_{}.png".format(ctx.author.id))
-                    if os.stat("./userImages/image_{}.png".format(ctx.author.id)).st_size <= 2000000:
-                        if str(ctx.author.id) not in queue:
-                            #pos = queue.index(str(user.id)) + 1
-                            queue.append(str(ctx.author.id))
-                            
-                            posfq = queue.index(str(ctx.author.id))
-                            if (posfq + 1) > 1:
-                                await ctx.reply("You have been queued and your place is {}.".format(queue[str(ctx.author.id)]))
+    if queue_open == True:
+        channel = ctx.channel
+        await ctx.send("Send the file you would like to trianglify. Supported image types: PNG, JPG, JPEG, BMP, SVG")
+        # check if channel is correct and author is the same
+        def check(au):
+            def i_check(m):
+                return m.channel == channel and m.author == au
+            return i_check
+        try:
+            msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+            # check if message contains attachment
+            if msg.attachments:
+                # check if attachment is an image: png, jpg, jpeg, bmp, or svg
+                if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                    if not os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
+                        # save the image for the file path
+                        await msg.attachments[0].save("./userImages/image_{}.png".format(ctx.author.id))
+                        if os.stat("./userImages/image_{}.png".format(ctx.author.id)).st_size <= 2000000:
+                            if str(ctx.author.id) not in queue:
+                                #pos = queue.index(str(user.id)) + 1
+                                queue.append(str(ctx.author.id))
+                                
+                                posfq = queue.index(str(ctx.author.id))
+                                if (posfq + 1) > 1:
+                                    await ctx.reply("You have been queued and your place is {}.".format(queue[str(ctx.author.id)]))
 
-                            if len(queue) == 1:
-                                while len(queue) >= 1:
-                                    uid = int(queue[0])
-                                    #u = bot.get_user(uid)
-                                    pos = queue.index(str(uid)) + 1
+                                if len(queue) == 1:
+                                    while len(queue) >= 1:
+                                        uid = int(queue[0])
+                                        #u = bot.get_user(uid)
+                                        pos = queue.index(str(uid)) + 1
 
-                                    if pos == 1:
-                                        imgpath = "./userImages/image_{}.png".format(uid)
-                                        msg1 = await ctx.send("Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. WARNING: Using a small image resolution will result in grainy and bad results. <@{}>".format(uid))
-                                        func = await trianglify_main(imgpath, uid)
-                                        for i in func:
-                                            yielded = i
-                                            if isinstance(yielded, int):
-                                                await msg1.edit(content = "Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. {} WARNING {}: Using a small image resolution will result in grainy and bad results. {}% finished. <@{}>".format(next(warning_loopt), next(warning_loopt), (yielded+1)*4, uid))
-                                            if isinstance(yielded, str):
-                                                await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
-                                        # remove files
-                                        if os.path.exists("./userImages/image_{}.png".format(uid)):
-                                            os.remove("./userImages/image_{}.png".format(uid))
-                                        if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
-                                            os.remove("./finishedImages/imageTri_{}.png".format(uid))
-                                        queue.remove(str(uid))
-                                    else:
-                                        if os.path.exists("./userImages/image_{}.png".format(uid)):
-                                            os.remove("./userImages/image_{}.png".format(uid))
+                                        if pos == 1:
+                                            imgpath = "./userImages/image_{}.png".format(uid)
+                                            msg1 = await ctx.send("Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. WARNING: Using a small image resolution will result in grainy and bad results. <@{}>".format(uid))
+                                            func = await trianglify_main(imgpath, uid)
+                                            for i in func:
+                                                yielded = i
+                                                if isinstance(yielded, int):
+                                                    await msg1.edit(content = "Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. {} WARNING {}: Using a small image resolution will result in grainy and bad results. {}% finished. <@{}>".format(next(warning_loopt), next(warning_loopt), (yielded+1)*4, uid))
+                                                if isinstance(yielded, str):
+                                                    await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
+                                            # remove files
+                                            if os.path.exists("./userImages/image_{}.png".format(uid)):
+                                                os.remove("./userImages/image_{}.png".format(uid))
+                                            if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
+                                                os.remove("./finishedImages/imageTri_{}.png".format(uid))
+                                            queue.remove(str(uid))
+                                        else:
+                                            if os.path.exists("./userImages/image_{}.png".format(uid)):
+                                                os.remove("./userImages/image_{}.png".format(uid))
 
-                            
+                                
+                            else:
+                                await ctx.reply("You are already in the queue.")
                         else:
-                            await ctx.reply("You are already in the queue.")
+                            if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/image_{}.png".format(ctx.author.id))
+                            await ctx.reply("The file is too large to trianglify! Max size is 2 MB.")
                     else:
-                        if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/image_{}.png".format(ctx.author.id))
-                        await ctx.reply("The file is too large to trianglify! Max size is 2 MB.")
+                        await ctx.reply("You currently have an image being trianglified. To keep the bot from breaking, you can only have one image being trianglified at once.")
+                # error checking
                 else:
-                    await ctx.reply("You currently have an image being trianglified. To keep the bot from breaking, you can only have one image being trianglified at once.")
-            # error checking
-            else:
-                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
-        if not msg.attachments:
-            await ctx.reply("Please send a file to trianglify.")
-    except asyncio.TimeoutError:
-        await ctx.reply("You did not respond in time.")
+                    await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+            if not msg.attachments:
+                await ctx.reply("Please send a file to trianglify.")
+        except asyncio.TimeoutError:
+            await ctx.reply("You did not respond in time.")
+    else:
+        await ctx.reply("Queue is currently closed.")
 
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -237,5 +241,15 @@ async def queuePos(ctx):
             await ctx.reply("An error has occurred.")
     else:
         await ctx.reply("You are not in the queue!")
+
+@bot.command(name = "queue_open")
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def queueAvailability(ctx, args):
+    if ctx.author.id == (488730568209465344):
+        if args == ("True" or "true"):
+            queue_open = True
+        if args == ("False" or "false"):
+            queue_open = False
+        await ctx.reply("Successfully changed.")
 
 bot.run(AUTH_TOKEN)
