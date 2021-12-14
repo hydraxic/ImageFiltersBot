@@ -30,7 +30,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 
 queue = []
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
-status = itertools.cycle(['use t trianglify', 'making cool images']) # for the 10 second change of presence
+status = "t trianglify"
 warning_loopt = itertools.cycle(["!", "¡"])
 
 pip.main(["install", "Pillow", "--upgrade"])
