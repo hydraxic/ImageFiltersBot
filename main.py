@@ -133,7 +133,7 @@ async def on_ready():
 
 @tasks.loop(seconds=10)
 async def change_status():
-    await bot.change_presence(activity = discord.Game(next(status)))
+    await bot.change_presence(activity = discord.Game(status))
 
 @bot.event
 async def on_command_error(ctx, error):
