@@ -245,10 +245,11 @@ async def queuePos(ctx):
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def queueAvailability(ctx, args):
     if ctx.author.id == (488730568209465344):
-        if args == ("True" or "true"):
+        if args == "true":
             queue_open = True
-        if args == ("False" or "false"):
+            await ctx.reply("Successfully changed.")
+        if args == "false":
             queue_open = False
-        await ctx.reply("Successfully changed.")
+            await ctx.reply("Successfully changed.")
 
 bot.run(AUTH_TOKEN)
