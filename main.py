@@ -28,7 +28,6 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
-global queue_open
 queue_open = True
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
@@ -48,6 +47,11 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
         wrapped = functools.partial(func, *args, **kwargs)
         return await loop.run_in_executor(None, func, *args, **kwargs)
     return wrapper
+
+def check_for_open_queue():
+    if queue_open == True:
+        return True
+    else: return False
 
 def toFile(image):
     with io.BytesIO() as image_binary:
@@ -169,7 +173,7 @@ async def trianglify(ctx):
                     if os.stat("./userImages/image_{}.png".format(ctx.author.id)).st_size <= 2000000:
                         if str(ctx.author.id) not in queue:
                             #pos = queue.index(str(user.id)) + 1
-                            if queue_open == True:
+                            if check_for_open_queue():
                                 queue.append(str(ctx.author.id))
                                 
                                 posfq = queue.index(str(ctx.author.id))
