@@ -1,22 +1,30 @@
+# install extensions
+
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import cooldown, BucketType
+
 from PIL import Image, ImageDraw
-import itertools
-import numpy
+import matplotlib.pyplot as plt
 import pygame
 import pygame.gfxdraw
-import matplotlib.pyplot as plt
+
+import itertools
+import numpy
+import functools
+import math
+
 from scipy.spatial import Delaunay
 from scipy.ndimage import gaussian_filter
+
 from collections import defaultdict
+
 import io
 import os
-import functools
 import typing
 import asyncio
 import psutil
-import math
+
 import redis
 
 #tokens
@@ -34,13 +42,15 @@ grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
 warning_loopt = itertools.cycle(["!", "¡"])
 
-#pip.main(["install", "Pillow", "--upgrade"])
+# bot setup
 
 intents = discord.Intents(messages = True, members = True, guilds = True)
 bot = commands.Bot(command_prefix = ["t ", "T "], intents = intents, case_insensitive = True, help_command = None)
 
 #functions
 
+# this function makes other functions run on different threads if using
+# @to_thread before function
 def to_thread(func: typing.Callable) -> typing.Coroutine:
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
@@ -49,11 +59,16 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
         return await loop.run_in_executor(None, func, *args, **kwargs)
     return wrapper
 
+#checking to see if queue is open
+
 def check_for_open_queue():
     global queue_open
     if queue_open == True:
         return True
     else: return False
+
+# turning an image into a file type
+# note to self: BytesIO runs off memory, maybe try to find a better method
 
 def toFile(image):
     with io.BytesIO() as image_binary:
@@ -61,11 +76,15 @@ def toFile(image):
         image_binary.seek(0)
         return discord.File(fp=image_binary, filename='image.png')
 
+# image antialiasing
+
 def antialias(imagepath):
     image = Image.open(imagepath)
     w, h = image.size
     image.resize((w, h), resample = Image.ANTIALIAS)
     return image
+
+# main function to trianglify images
 
 @to_thread
 def trianglify_main(image, userid):
@@ -138,9 +157,13 @@ async def on_ready():
     change_status.start()
     print("TrianglificatorBot has started.")
 
-@tasks.loop(seconds=10)
+#change status
+
+#@tasks.loop(seconds=10)
 async def change_status():
     await bot.change_presence(activity = discord.Game(status))
+
+#checking for command errors
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -152,6 +175,15 @@ async def on_command_error(ctx, error):
         raise(error)
 
 #commands
+
+@bot.command(name = "help")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def helpc(ctx):
+    clist = ["trianglify", "queue"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification."]
+
+    embed = discord.Embed(title = "Help", description = "\u200b")
+    
 
 @bot.command(name = "trianglify")
 @commands.cooldown(1, 10, commands.BucketType.user)
