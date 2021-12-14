@@ -259,12 +259,10 @@ async def queuePos(ctx):
 async def queueAvailability(ctx, args):
     if ctx.author.id == (488730568209465344):
         if args == "true":
-            global queue_open
             queue_open = True
             print(queue_open)
             await ctx.reply("Successfully changed.")
         if args == "false":
-            global queue_open
             queue_open = False
             print(queue_open)
             await ctx.reply("Successfully changed.")
