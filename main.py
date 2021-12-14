@@ -28,7 +28,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
-queue_open = True
+queue_open = None
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
 warning_loopt = itertools.cycle(["!", "¡"])
