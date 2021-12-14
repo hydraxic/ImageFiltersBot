@@ -49,6 +49,7 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
     return wrapper
 
 def check_for_open_queue():
+    global queue_open
     if queue_open == True:
         return True
     else: return False
