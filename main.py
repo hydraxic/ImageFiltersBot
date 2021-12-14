@@ -28,6 +28,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
+global queue_open
 queue_open = True
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
@@ -247,9 +248,11 @@ async def queueAvailability(ctx, args):
     if ctx.author.id == (488730568209465344):
         if args == "true":
             queue_open = True
+            print(queue_open)
             await ctx.reply("Successfully changed.")
         if args == "false":
             queue_open = False
+            print(queue_open)
             await ctx.reply("Successfully changed.")
 
 bot.run(AUTH_TOKEN)
