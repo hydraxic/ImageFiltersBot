@@ -173,7 +173,7 @@ async def trianglify(ctx):
                     if os.stat("./userImages/image_{}.png".format(ctx.author.id)).st_size <= 2000000:
                         if str(ctx.author.id) not in queue:
                             #pos = queue.index(str(user.id)) + 1
-                            uid = int(queue[0])
+                            
                             if check_for_open_queue():
                                 queue.append(str(ctx.author.id))
                                 
@@ -183,7 +183,7 @@ async def trianglify(ctx):
 
                                 if len(queue) == 1:
                                     while len(queue) >= 1:
-                                        
+                                        uid = int(queue[0])
                                         #u = bot.get_user(uid)
                                         pos = queue.index(str(uid)) + 1
 
@@ -207,13 +207,16 @@ async def trianglify(ctx):
                                             if os.path.exists("./userImages/image_{}.png".format(uid)):
                                                 os.remove("./userImages/image_{}.png".format(uid))
                             else:
-                                if os.path.exists("./userImages/image_{}.png".format(uid)):
-                                    os.remove("./userImages/image_{}.png".format(uid))
+                                if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
+                                    os.remove("./userImages/image_{}.png".format(ctx.author.id))
                                 await ctx.reply("Queue is currently closed.")
 
                             
                         else:
+                            if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/image_{}.png".format(ctx.author.id))
                             await ctx.reply("You are already in the queue.")
+
                     else:
                         if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
                             os.remove("./userImages/image_{}.png".format(ctx.author.id))
