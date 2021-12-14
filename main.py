@@ -154,7 +154,7 @@ def trianglify_main(image, userid):
 
 @bot.event
 async def on_ready():
-    change_status.start()
+    change_status()#.start()
     print("TrianglificatorBot has started.")
 
 #change status
