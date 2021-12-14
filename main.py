@@ -36,8 +36,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
-global queue_open
-queue_open = True
+queue_open = open("./queue_open/value.txt", "w")
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "t trianglify"
 warning_loopt = itertools.cycle(["!", "¡"])
@@ -62,10 +61,12 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
 #checking to see if queue is open
 
 def check_for_open_queue():
-    global queue_open
-    if queue_open == True:
+    f = open("./queue_open/value.txt", "r")
+    c = f.read()
+    if c == "True":
         return True
-    else: return False
+    if c == "False":
+        return False
 
 # turning an image into a file type
 # note to self: BytesIO runs off memory, maybe try to find a better method
@@ -287,12 +288,12 @@ async def queuePos(ctx):
 async def queueAvailability(ctx, args):
     if ctx.author.id == (488730568209465344):
         if args == "true":
-            queue_open = True
-            print(queue_open)
+            f = open("./queue_open/value.txt", "w")
+            f.write("True")
             await ctx.reply("Successfully changed.")
         if args == "false":
-            queue_open = False
-            print(queue_open)
+            f = open("./queue_open/value.txt", "w")
+            f.write("False")
             await ctx.reply("Successfully changed.")
 
 bot.run(AUTH_TOKEN)
