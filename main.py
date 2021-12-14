@@ -20,6 +20,8 @@ import psutil
 import math
 import redis
 
+#this is from my laptop
+
 redis_server = redis.Redis()
 AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 
