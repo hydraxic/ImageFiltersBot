@@ -129,7 +129,7 @@ def trianglify_main(image, userid):
 @bot.event
 async def on_ready():
     change_status.start()
-    print("TrianglificatorBot has started running.")
+    print("TrianglificatorBot has started.")
 
 @tasks.loop(seconds=10)
 async def change_status():
