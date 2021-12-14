@@ -154,14 +154,10 @@ def trianglify_main(image, userid):
 
 @bot.event
 async def on_ready():
-    change_status()#.start()
+    await bot.change_presence(activity = discord.Game(status))
     print("TrianglificatorBot has started.")
 
 #change status
-
-#@tasks.loop(seconds=10)
-async def change_status():
-    await bot.change_presence(activity = discord.Game(status))
 
 #checking for command errors
 
