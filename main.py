@@ -350,9 +350,9 @@ async def pixelate(ctx):
                                 imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                                 
                                 await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
-
-                            if (uw >= iw) or (uh >= ih):
-                                await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
+                            else:
+                                if (uw >= iw) or (uh >= ih):
+                                    await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
 
                             if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
                                 os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
@@ -370,11 +370,11 @@ async def pixelate(ctx):
                             os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
                         await ctx.reply("File size is too large! Max size is 10 MB.")
                 else:
-                    await ctx.reply("You currently have an image being grayscaled. Try again later.")
+                    await ctx.reply("You currently have an image being pixelated. Try again later.")
             else:
                 await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
         if not msg.attachments:
-            await ctx.reply("Please send a file to grayscale.")
+            await ctx.reply("Please send a file to pixelate.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
 
