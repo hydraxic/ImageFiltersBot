@@ -338,7 +338,7 @@ async def pixelate(ctx):
                         try:
 
                             try:
-                                uw, uh = int(msg.content.split(", ")[0]), (msg.content.split(", ")[1])
+                                uw, uh = int(msg.content.split(", ")[0]), int(msg.content.split(", ")[1])
                             except ValueError:
                                 await ctx.reply("Please send the dimensions in the format of width, height.")
 
