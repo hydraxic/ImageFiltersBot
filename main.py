@@ -323,17 +323,37 @@ async def pixelate(ctx):
                 if not os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
                     await msg.attachments[0].save("./userImages/imagePix_{}.png".format(ctx.author.id))
                     if os.stat("./userImages/imagePix_{}.png".format(ctx.author.id)).st_size <= 10000000:
-                        i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
-                        ims = i.resize((32, 32), resample = Image.BILINEAR)
-                        imrs = ims.resize(i.size, Image.NEAREST)
-                        imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
-                        
-                        await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
+                        def check2(au):
+                            def i_check2(m):
+                                return m.channel == channel and m.author == au
+                            return i_check2
+                        await ctx.reply("Please send the width and height you would like: <width>, <height>. Example: 32, 32 would mean that the image would have 32 pixels as the width and height.")
+                        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 30)
+                        try:
+                            uw, uh = msg.split(", ")[0], msg.split(", ")[1]
 
-                        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                        if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                            os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                            i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            iw, ih = i.size
+                            if (uw < iw) or (uh < ih):
+                                ims = i.resize((uw, uh), resample = Image.BILINEAR)
+                                imrs = ims.resize(i.size, Image.NEAREST)
+                                imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                                
+                                await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
+
+                            if (uw >= iw) or (uh >= ih):
+                                await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
+
+                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                        except asyncio.TimeoutError:
+                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                            await ctx.reply("You did not respond in time.")
                     else:
                         if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
                             os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
