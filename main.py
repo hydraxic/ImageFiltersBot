@@ -176,10 +176,14 @@ async def on_command_error(ctx, error):
 @bot.command(name = "help")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def helpc(ctx):
-    clist = ["trianglify", "queue"]
-    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification."]
+    clist = ["trianglify", "queue", "grayscale"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white."]
 
     embed = discord.Embed(title = "Help", description = "\u200b")
+    
+    for v in clist:
+        index = clist.index(v)
+        embed.add_field(value = "**{}**".format(v), description = "*{}*".format(cdesc[index]))
     
 
 @bot.command(name = "trianglify")
