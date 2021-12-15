@@ -183,7 +183,7 @@ async def helpc(ctx):
     
     for v in clist:
         index = clist.index(v)
-        embed.add_field(value = "**{}**".format(v), description = "*{}*".format(cdesc[index]))
+        embed.add_field(name = "**{}**".format(v), value = "*{}*".format(cdesc[index]), inline = False)
     
 
 @bot.command(name = "trianglify")
