@@ -334,11 +334,11 @@ async def pixelate(ctx):
                                 return m.channel == channel and m.author == au
                             return i_check2
                         await ctx.reply("Please send the width and height you would like: <width>, <height>. Example: 32, 32 would mean that the image would have 32 pixels as the width and height.")
-                        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 30)
+                        msg2 = await bot.wait_for("message", check = check(ctx.author), timeout = 30)
                         try:
 
                             try:
-                                uw, uh = int(msg.content.split(", ")[0]), int(msg.content.split(", ")[1])
+                                uw, uh = int(msg2.content.split(", ")[0]), int(msg2.content.split(", ")[1])
                             except ValueError:
                                 await ctx.reply("Please send the dimensions in the format of width, height.")
 
