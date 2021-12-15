@@ -158,6 +158,12 @@ async def on_ready():
     await bot.change_presence(activity = discord.Game(status))
     print("{} has started.".format(bot.user.name))
 
+    for v in os.listdir("./userImages"):
+        os.remove("./userImages/{}".format(v))
+    for v in os.listdir("./finishedImages"):
+        os.remove("./finishedImages/{}".format(v))
+
+
 #change status
 
 #checking for command errors
@@ -176,8 +182,8 @@ async def on_command_error(ctx, error):
 @bot.command(name = "help")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def helpc(ctx):
-    clist = ["trianglify", "queue", "grayscale"]
-    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white."]
+    clist = ["trianglify", "queue", "grayscale, pixelate"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images."]
 
     embed = discord.Embed(title = "Help", description = "-------------")
     
