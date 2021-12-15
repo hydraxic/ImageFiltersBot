@@ -330,7 +330,7 @@ async def pixelate(ctx):
                         await ctx.reply("Please send the width and height you would like: <width>, <height>. Example: 32, 32 would mean that the image would have 32 pixels as the width and height.")
                         msg = await bot.wait_for("message", check = check(ctx.author), timeout = 30)
                         try:
-                            uw, uh = msg.content.split(", ")[0], msg.content.split(", ")[1]
+                            uw, uh = int(msg.content.split(", ")[0]), (msg.content.split(", ")[1])
 
                             i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
                             iw, ih = i.size
