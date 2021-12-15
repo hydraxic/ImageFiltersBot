@@ -326,7 +326,8 @@ async def pixelate(ctx):
                         i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
                         ims = i.resize((32, 32), resample = Image.BILINEAR)
                         imss = ims.resize(ims.size, Image.NEAREST)
-                        imss.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                        imrs = imss.resize(i.size)
+                        imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                         
                         await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
 
