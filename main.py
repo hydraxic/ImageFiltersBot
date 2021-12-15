@@ -336,27 +336,28 @@ async def pixelate(ctx):
                         await ctx.reply("Please send the width and height you would like: <width>, <height>. Example: 32, 32 would mean that the image would have 32 pixels as the width and height.")
                         msg = await bot.wait_for("message", check = check(ctx.author), timeout = 30)
                         try:
-                            uw, uh = int(msg.content.split(", ")[0]), (msg.content.split(", ")[1])
+
+                            try:
+                                uw, uh = int(msg.content.split(", ")[0]), (msg.content.split(", ")[1])
+                            except ValueError:
+                                await ctx.reply("Please send the dimensions in the format of width, height.")
 
                             i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
                             iw, ih = i.size
-                            if (uw < iw) or (uh < ih):
+                            if (uw < iw) and (uh < ih):
                                 ims = i.resize((int(uw), int(uh)), resample = Image.BILINEAR)
                                 imrs = ims.resize(i.size, Image.NEAREST)
                                 imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                                 
                                 await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
-                                if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                                    os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                                if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                                    os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
                             if (uw >= iw) or (uh >= ih):
                                 await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
-                                if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                                    os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                                if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                                    os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+
+                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
                         except asyncio.TimeoutError:
                             if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
