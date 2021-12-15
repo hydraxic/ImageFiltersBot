@@ -184,6 +184,8 @@ async def helpc(ctx):
     for v in clist:
         index = clist.index(v)
         embed.add_field(name = "**{}**".format(v), value = "*{}*".format(cdesc[index]), inline = False)
+
+    await ctx.reply(embed = embed)
     
 
 @bot.command(name = "trianglify")
