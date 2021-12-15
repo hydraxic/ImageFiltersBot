@@ -1,4 +1,11 @@
-# TrianglificatorBot
-Trianglificator
+# ImageFiltersBot
 
-This is the source code for the Trianglificator bot on Discord. It takes images sent by the user and turns them into a triangle polygon pattern.
+Bot is in v1.02
+
+Image filters!
+
+This is the source code for the Image Filters bot on Discord. It takes images sent by the user and can apply specified filters to them.
+
+Current filters:
+- Trianglify; turns image triangle patterned
+- Grayscale; makes image grayscaled/black and white
