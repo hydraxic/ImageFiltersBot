@@ -335,7 +335,7 @@ async def pixelate(ctx):
                             i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
                             iw, ih = i.size
                             if (uw < iw) or (uh < ih):
-                                ims = i.resize((uw, uh), resample = Image.BILINEAR)
+                                ims = i.resize((int(uw), int(uh)), resample = Image.BILINEAR)
                                 imrs = ims.resize(i.size, Image.NEAREST)
                                 imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                                 
