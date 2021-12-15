@@ -346,14 +346,18 @@ async def pixelate(ctx):
                                 imrs.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                                 
                                 await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
+                                if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                                    os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                                if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                                    os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
                             if (uw >= iw) or (uh >= ih):
                                 await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
+                                if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                                    os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                                if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                                    os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
-                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                         except asyncio.TimeoutError:
                             if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
                                 os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
