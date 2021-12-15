@@ -186,7 +186,7 @@ async def helpc(ctx):
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def trianglify(ctx):
     channel = ctx.channel
-    await ctx.send("Send the file you would like to trianglify. Supported image types: PNG, JPG, JPEG, BMP, SVG")
+    await ctx.reply("Send the file you would like to trianglify. Supported image types: PNG, JPG, JPEG, BMP, SVG")
     # check if channel is correct and author is the same
     def check(au):
         def i_check(m):
@@ -198,10 +198,10 @@ async def trianglify(ctx):
         if msg.attachments:
             # check if attachment is an image: png, jpg, jpeg, bmp, or svg
             if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
-                if not os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
+                if not os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
                     # save the image for the file path
-                    await msg.attachments[0].save("./userImages/image_{}.png".format(ctx.author.id))
-                    if os.stat("./userImages/image_{}.png".format(ctx.author.id)).st_size <= 2000000:
+                    await msg.attachments[0].save("./userImages/imageT_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imageT_{}.png".format(ctx.author.id)).st_size <= 2000000:
                         if str(ctx.author.id) not in queue:
                             #pos = queue.index(str(user.id)) + 1
                             
@@ -219,7 +219,7 @@ async def trianglify(ctx):
                                         pos = queue.index(str(uid)) + 1
 
                                         if pos == 1:
-                                            imgpath = "./userImages/image_{}.png".format(uid)
+                                            imgpath = "./userImages/imageT_{}.png".format(uid)
                                             msg1 = await ctx.send("Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. WARNING: Using a small image resolution will result in grainy and bad results. <@{}>".format(uid))
                                             func = await trianglify_main(imgpath, uid)
                                             for i in func:
@@ -229,28 +229,28 @@ async def trianglify(ctx):
                                                 if isinstance(yielded, str):
                                                     await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
                                             # remove files
-                                            if os.path.exists("./userImages/image_{}.png".format(uid)):
-                                                os.remove("./userImages/image_{}.png".format(uid))
+                                            if os.path.exists("./userImages/imageT_{}.png".format(uid)):
+                                                os.remove("./userImages/imageT_{}.png".format(uid))
                                             if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
                                                 os.remove("./finishedImages/imageTri_{}.png".format(uid))
                                             queue.remove(str(uid))
                                         else:
-                                            if os.path.exists("./userImages/image_{}.png".format(uid)):
-                                                os.remove("./userImages/image_{}.png".format(uid))
+                                            if os.path.exists("./userImages/imageT_{}.png".format(uid)):
+                                                os.remove("./userImages/imageT_{}.png".format(uid))
                             else:
-                                if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
-                                    os.remove("./userImages/image_{}.png".format(ctx.author.id))
+                                if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
+                                    os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
                                 await ctx.reply("Queue is currently closed.")
 
                             
                         else:
-                            if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/image_{}.png".format(ctx.author.id))
+                            if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
+                                os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
                             await ctx.reply("You are already in the queue.")
 
                     else:
-                        if os.path.exists("./userImages/image_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/image_{}.png".format(ctx.author.id))
+                        if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
+                            os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
                         await ctx.reply("The file is too large to trianglify! Max size is 2 MB.")
                 else:
                     await ctx.reply("You currently have an image being trianglified. To keep the bot from breaking, you can only have one image being trianglified at once.")
@@ -261,6 +261,46 @@ async def trianglify(ctx):
             await ctx.reply("Please send a file to trianglify.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
+
+@bot.command(name = "grayscale")
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def grayscale(ctx):
+    channel = ctx.channel
+    await ctx.reply("Send the file you would like to be grayscaled. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    def check(au):
+        def i_check(m):
+            return m.channel == channel and m.author == au
+        return i_check
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+        if msg.attachments:
+            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                if not os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
+                    await msg.attachments[0].save("./userImages/imageGray_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imageGray_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                        i = Image.open("./userImages/imageGray_{}.png".format(ctx.author.id))
+                        ig = i.convert("L")
+                        ig.save("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
+                        
+                        await ctx.reply(file = discord.File("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)))
+
+                        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
+                            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+                        if os.path.exists("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)):
+                            os.remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
+                    else:
+                        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
+                            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+                        await ctx.reply("File size is too large! Max size is 10 MB.")
+                else:
+                    await ctx.reply("You currently have an image being grayscaled. Try again later.")
+            else:
+                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+        if not msg.attachments:
+            await ctx.reply("Please send a file to grayscale.")
+    except asyncio.TimeoutError:
+        await ctx.reply("You did not respond in time.")
+
 
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
