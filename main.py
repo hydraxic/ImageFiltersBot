@@ -39,13 +39,13 @@ queue = []
 global queue_open
 queue_open = True
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
-status = "t trianglify"
+status = "use: i help"
 warning_loopt = itertools.cycle(["!", "¡"])
 
 # bot setup
 
 intents = discord.Intents(messages = True, members = True, guilds = True)
-bot = commands.Bot(command_prefix = ["t ", "T "], intents = intents, case_insensitive = True, help_command = None)
+bot = commands.Bot(command_prefix = ["i ", "I "], intents = intents, case_insensitive = True, help_command = None)
 
 #functions
 
