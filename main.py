@@ -179,7 +179,7 @@ async def helpc(ctx):
     clist = ["trianglify", "queue", "grayscale"]
     cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white."]
 
-    embed = discord.Embed(title = "Help", description = "\u200b")
+    embed = discord.Embed(title = "Help", description = "-------------")
     
     for v in clist:
         index = clist.index(v)
@@ -307,6 +307,45 @@ async def grayscale(ctx):
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
 
+@bot.command(name = "pixelate")
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def pixelate(ctx):
+    channel = ctx.channel
+    await ctx.reply("Send the file you would like to be pixelate. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    def check(au):
+        def i_check(m):
+            return m.channel == channel and m.author == au
+        return i_check
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+        if msg.attachments:
+            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                if not os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                    await msg.attachments[0].save("./userImages/imagePix_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imagePix_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                        i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
+                        ims = i.resize((32, 32), resample = Image.BILINEAR)
+                        imss = ims.resize(ims.size, Image.NEAREST)
+                        imss.save("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                        
+                        await ctx.reply(file = discord.File("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)))
+
+                        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                        if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+                            os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                    else:
+                        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+                            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                        await ctx.reply("File size is too large! Max size is 10 MB.")
+                else:
+                    await ctx.reply("You currently have an image being grayscaled. Try again later.")
+            else:
+                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+        if not msg.attachments:
+            await ctx.reply("Please send a file to grayscale.")
+    except asyncio.TimeoutError:
+        await ctx.reply("You did not respond in time.")
 
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
