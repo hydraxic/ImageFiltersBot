@@ -231,21 +231,28 @@ async def trianglify(ctx):
                                         pos = queue.index(str(uid)) + 1
 
                                         if pos == 1:
-                                            imgpath = "./userImages/imageT_{}.png".format(uid)
-                                            msg1 = await ctx.send("Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. WARNING: Using a small image resolution will result in grainy and bad results. <@{}>".format(uid))
-                                            func = await trianglify_main(imgpath, uid)
-                                            for i in func:
-                                                yielded = i
-                                                if isinstance(yielded, int):
-                                                    await msg1.edit(content = "Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. {} WARNING {}: Using a small image resolution will result in grainy and bad results. {}% finished. <@{}>".format(next(warning_loopt), next(warning_loopt), (yielded+1)*4, uid))
-                                                if isinstance(yielded, str):
-                                                    await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
-                                            # remove files
-                                            if os.path.exists("./userImages/imageT_{}.png".format(uid)):
-                                                os.remove("./userImages/imageT_{}.png".format(uid))
-                                            if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
-                                                os.remove("./finishedImages/imageTri_{}.png".format(uid))
-                                            queue.remove(str(uid))
+                                            try:
+                                                imgpath = "./userImages/imageT_{}.png".format(uid)
+                                                msg1 = await ctx.send("Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. WARNING: Using a small image resolution will result in grainy and bad results. <@{}>".format(uid))
+                                                func = await trianglify_main(imgpath, uid)
+                                                for i in func:
+                                                    yielded = i
+                                                    if isinstance(yielded, int):
+                                                        await msg1.edit(content = "Currently trianglifying image. The time it takes to render will depend on the image resolution, complexity, and size. {} WARNING {}: Using a small image resolution will result in grainy and bad results. {}% finished. <@{}>".format(next(warning_loopt), next(warning_loopt), (yielded+1)*4, uid))
+                                                    if isinstance(yielded, str):
+                                                        await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
+                                                # remove files
+                                                if os.path.exists("./userImages/imageT_{}.png".format(uid)):
+                                                    os.remove("./userImages/imageT_{}.png".format(uid))
+                                                if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
+                                                    os.remove("./finishedImages/imageTri_{}.png".format(uid))
+                                                queue.remove(str(uid))
+                                            except ValueError:
+                                                await msg1.edit("Please send an image with 24 bit depth or 32 bit depth.")
+                                                if os.path.exists("./userImages/imageT_{}.png".format(uid)):
+                                                    os.remove("./userImages/imageT_{}.png".format(uid))
+                                                queue.remove(str(uid))
+                                                break
                                         else:
                                             if os.path.exists("./userImages/imageT_{}.png".format(uid)):
                                                 os.remove("./userImages/imageT_{}.png".format(uid))
