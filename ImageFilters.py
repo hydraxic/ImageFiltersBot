@@ -441,9 +441,9 @@ async def blur(ctx):
 
                             msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 15)
                             
-                            if msg2.content == "s" or "S":
+                            if msg2.content == "s" or msg2.content == "S":
                                 simple_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id)
-                            if msg2.content == "b" or "B":
+                            if msg2.content == "b" or msg2.content == "B":
                                 try:
                                     def check3(au):
                                         def i_check3(m):
@@ -460,7 +460,7 @@ async def blur(ctx):
                                             await ctx.reply("Please send a number larger than 0.")
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
-                            if msg2.content == "g" or "G":
+                            if msg2.content == "g" or msg2.content == "G":
                                 try:
                                     def check3_2(au):
                                         def i_check3_2(m):
