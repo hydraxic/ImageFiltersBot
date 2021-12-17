@@ -298,6 +298,10 @@ async def trianglify(ctx):
             await ctx.reply("Please send a file to trianglify.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
+        if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
+            os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
+        if os.path.exists("./finishedImages/imageTri_{}.png".format(ctx.author.id)):
+            os.remove("./finishedImages/imageTri_{}.png".format(ctx.author.id))
 
 @bot.command(name = "grayscale")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -337,6 +341,10 @@ async def grayscale(ctx):
             await ctx.reply("Please send a file to grayscale.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
+        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
+            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+        if os.path.exists("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)):
+            os.remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "pixelate")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -402,6 +410,10 @@ async def pixelate(ctx):
             await ctx.reply("Please send a file to pixelate.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
+        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
+            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+        if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
+            os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "blur")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -429,9 +441,9 @@ async def blur(ctx):
 
                             msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 15)
                             
-                            if msg2.content == "s":
+                            if msg2.content == "s" or "S":
                                 simple_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id)
-                            if msg2.content == "b":
+                            if msg2.content == "b" or "B":
                                 try:
                                     def check3(au):
                                         def i_check3(m):
@@ -448,7 +460,7 @@ async def blur(ctx):
                                             await ctx.reply("Please send a number larger than 0.")
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
-                            if msg2.content == "g":
+                            if msg2.content == "g" or "G":
                                 try:
                                     def check3_2(au):
                                         def i_check3_2(m):
@@ -491,6 +503,10 @@ async def blur(ctx):
             await ctx.reply("Please send a file to blur.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
+        if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
+            os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+        if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
+            os.remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
 
 @bot.command(name = "rusage")
