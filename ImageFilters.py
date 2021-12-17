@@ -465,11 +465,11 @@ async def blur(ctx):
                                             await ctx.reply("Please send a number larger than 0.")
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
-                            if msg2.content != "g" and msg2.content != "s" and msg.content != "b":
-                                await ctx.reply("Please send either s, g, or b.")
                             
                             if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
                                 await ctx.reply(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
+                            else:
+                                await ctx.reply("Please send either s, g, or b.")
 
                             if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
                                 os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
@@ -513,6 +513,12 @@ async def queuePos(ctx):
             await ctx.reply("An error has occurred.")
     else:
         await ctx.reply("You are not in the queue!")
+
+@bot.command(name = "shutdown")
+async def shutdown(ctx):
+    if ctx.author.id == (488730568209465344):
+        await ctx.reply("Shutting down...")
+        await bot.logout()
 
 @bot.command(name = "queue_open")
 @commands.cooldown(1, 10, commands.BucketType.user)
