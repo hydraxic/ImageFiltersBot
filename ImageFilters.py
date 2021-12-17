@@ -470,8 +470,6 @@ async def blur(ctx):
                             
                             if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
                                 await ctx.reply(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
-                            else:
-                                await ctx.reply("You did something wrong or an unexpected error occurred.")
 
                             if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
                                 os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
