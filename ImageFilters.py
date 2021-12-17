@@ -458,6 +458,7 @@ async def blur(ctx):
                                             box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
+                                            return
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
                             if msg2.content == "g" or msg2.content == "G":
@@ -475,6 +476,7 @@ async def blur(ctx):
                                             gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3_2.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
+                                            return
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
                             
