@@ -467,8 +467,6 @@ async def blur(ctx):
                                     await ctx.reply("Please send a number.")
                             if msg2.content != "g" and msg2.content != "s" and msg.content != "b":
                                 await ctx.reply("Please send either s, g, or b.")
-                            else:
-                                await ctx.reply("Unexpected error. ValueError")
                             
                             if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
                                 await ctx.reply(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
