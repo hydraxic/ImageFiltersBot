@@ -10,7 +10,7 @@ import pygame
 import pygame.gfxdraw
 
 import itertools
-import numpy
+import numpy as np
 import functools
 import math
 
@@ -101,7 +101,7 @@ def trianglify_main(image, userid):
     imgco = pygame.image.load(image)
     inps = pygame.transform.smoothscale(imgco, (imgco.get_width() / 2, imgco.get_height() / 2))
     inp = pygame.surfarray.pixels3d(inps)
-    pcw = numpy.array(grayscale_array)
+    pcw = np.array(grayscale_array)
     gs = (inp * pcw).sum(axis =- 1)
 
     x = gaussian_filter(gs, 2, mode = "reflect")
@@ -109,16 +109,16 @@ def trianglify_main(image, userid):
 
     diff = (x - x2)
     diff[diff < 0] *= 0.1
-    diff = numpy.sqrt(numpy.abs(diff) / diff.max())
+    diff = np.sqrt(np.abs(diff) / diff.max())
 
     def sample(ref, n = 1000000): #big number 1 million
-        numpy.random.seed(0)
+        np.random.seed(0)
         w, h = x.shape
-        xs = numpy.random.randint(0, w, size = n)
-        ys = numpy.random.randint(0, h, size = n)
+        xs = np.random.randint(0, w, size = n)
+        ys = np.random.randint(0, h, size = n)
         value = ref[xs, ys]
-        accept = numpy.random.random(size = n) < value
-        points = numpy.array([xs[accept], ys[accept]])
+        accept = np.random.random(size = n) < value
+        points = np.array([xs[accept], ys[accept]])
         return points.T, value[accept]
 
     samples, v = sample(diff)
@@ -132,7 +132,7 @@ def trianglify_main(image, userid):
                 index = tri.find_simplex((i, j))
                 colours[int(index)].append(inp[i, j, :])
         for index, array in colours.items():
-            colours[index] = numpy.array(array).mean(axis = 0)
+            colours[index] = np.array(array).mean(axis = 0)
         return colours
 
     def draw(tri, colours, screen, upscale):
@@ -147,8 +147,8 @@ def trianglify_main(image, userid):
     upscale = 2
     screen = pygame.Surface((w * upscale, h * upscale))
     screen.fill(inp.mean(axis = (0, 1)))
-    corners = numpy.array([(0, 0), (0, h - 1), (w - 1, 0), (w - 1, h - 1)])
-    points = numpy.concatenate((corners, samples))
+    corners = np.array([(0, 0), (0, h - 1), (w - 1, 0), (w - 1, h - 1)])
+    points = np.concatenate((corners, samples))
 
     for i in range(0, 25):
         n = 5 + i + 2 * int(i ** 2)
