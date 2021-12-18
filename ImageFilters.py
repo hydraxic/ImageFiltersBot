@@ -36,7 +36,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 #Variables
 
 queue = []
-queue_open = open("./queue_open/value.txt", "w")
+queue_open = open("./queue_open/value.txt", "r")
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "use: i help"
 warning_loopt = itertools.cycle(["!", "¡"])
@@ -57,6 +57,13 @@ def to_thread(func: typing.Callable) -> typing.Coroutine:
         wrapped = functools.partial(func, *args, **kwargs)
         return await loop.run_in_executor(None, func, *args, **kwargs)
     return wrapper
+
+# check for file and remove
+
+def check_remove(filepath):
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
 
 #checking to see if queue is open
 
@@ -260,34 +267,27 @@ async def trianglify(ctx):
                                                     if isinstance(yielded, str):
                                                         await ctx.reply(file = discord.File("./finishedImages/imageTri_{}.png".format(uid)))
                                                 # remove files
-                                                if os.path.exists("./userImages/imageT_{}.png".format(uid)):
-                                                    os.remove("./userImages/imageT_{}.png".format(uid))
-                                                if os.path.exists("./finishedImages/imageTri_{}.png".format(uid)):
-                                                    os.remove("./finishedImages/imageTri_{}.png".format(uid))
+                                                check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
+                                                check_remove("./finishedImages/imageTri_{}.png".format(ctx.author.id))
                                                 queue.remove(str(uid))
                                             except ValueError:
                                                 await msg1.edit("Please send an image with 24 bit depth or 32 bit depth.")
-                                                if os.path.exists("./userImages/imageT_{}.png".format(uid)):
-                                                    os.remove("./userImages/imageT_{}.png".format(uid))
+                                                check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
                                                 queue.remove(str(uid))
                                                 break
                                         else:
-                                            if os.path.exists("./userImages/imageT_{}.png".format(uid)):
-                                                os.remove("./userImages/imageT_{}.png".format(uid))
+                                            check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
                             else:
-                                if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
-                                    os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
+                                check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
                                 await ctx.reply("Queue is currently closed.")
 
                             
                         else:
-                            if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
+                            check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
                             await ctx.reply("You are already in the queue.")
 
                     else:
-                        if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
+                        check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
                         await ctx.reply("The file is too large to trianglify! Max size is 2 MB.")
                 else:
                     await ctx.reply("You currently have an image being trianglified. To keep the bot from breaking, you can only have one image being trianglified at once.")
@@ -298,10 +298,8 @@ async def trianglify(ctx):
             await ctx.reply("Please send a file to trianglify.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
-        if os.path.exists("./userImages/imageT_{}.png".format(ctx.author.id)):
-            os.remove("./userImages/imageT_{}.png".format(ctx.author.id))
-        if os.path.exists("./finishedImages/imageTri_{}.png".format(ctx.author.id)):
-            os.remove("./finishedImages/imageTri_{}.png".format(ctx.author.id))
+        check_remove("./userImages/imageT_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageTri_{}.png".format(ctx.author.id))
 
 @bot.command(name = "grayscale")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -325,13 +323,11 @@ async def grayscale(ctx):
                         
                         await ctx.reply(file = discord.File("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)))
 
-                        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
-                        if os.path.exists("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)):
-                            os.remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
+                        check_remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+                        check_remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
+
                     else:
-                        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+                        check_remove("./userImages/imageGray_{}.png".format(ctx.author.id))
                         await ctx.reply("File size is too large! Max size is 10 MB.")
                 else:
                     await ctx.reply("You currently have an image being grayscaled. Try again later.")
@@ -341,10 +337,8 @@ async def grayscale(ctx):
             await ctx.reply("Please send a file to grayscale.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
-        if os.path.exists("./userImages/imageGray_{}.png".format(ctx.author.id)):
-            os.remove("./userImages/imageGray_{}.png".format(ctx.author.id))
-        if os.path.exists("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id)):
-            os.remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
+        check_remove("./userImages/imageGray_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageGrayFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "pixelate")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -387,20 +381,15 @@ async def pixelate(ctx):
                                 if (uw >= iw) or (uh >= ih):
                                     await ctx.reply("You can only pixelate an image to less than its original size. The image size is {}, {} and you wanted to resize it to {}, {}.".format(i.size[0], i.size[1], uw, uh))
 
-                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                            check_remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
                         except asyncio.TimeoutError:
-                            if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-                            if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-                                os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
+                            check_remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
                             await ctx.reply("You did not respond in time.")
                     else:
-                        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+                        check_remove("./userImages/imagePix_{}.png".format(ctx.author.id))
                         await ctx.reply("File size is too large! Max size is 10 MB.")
                 else:
                     await ctx.reply("You currently have an image being pixelated. Try again later.")
@@ -409,11 +398,9 @@ async def pixelate(ctx):
         if not msg.attachments:
             await ctx.reply("Please send a file to pixelate.")
     except asyncio.TimeoutError:
+        check_remove("./userImages/imagePix_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
         await ctx.reply("You did not respond in time.")
-        if os.path.exists("./userImages/imagePix_{}.png".format(ctx.author.id)):
-            os.remove("./userImages/imagePix_{}.png".format(ctx.author.id))
-        if os.path.exists("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id)):
-            os.remove("./finishedImages/imagePixFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "blur")
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -458,8 +445,7 @@ async def blur(ctx):
                                             box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
-                                            if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-                                                os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                                             return
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
@@ -478,8 +464,7 @@ async def blur(ctx):
                                             gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3_2.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
-                                            if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-                                                os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                                             return
                                 except ValueError:
                                     await ctx.reply("Please send a number.")
@@ -489,17 +474,13 @@ async def blur(ctx):
                             else:
                                 await ctx.reply("Please send either s, g, or b.")
 
-                            if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
-                            if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
-                                os.remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
                         except ValueError:
-                            if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-                                os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                             await ctx.reply("An error occurred.")
                     else:
-                        if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-                            os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                        check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                         await ctx.reply("File size is too large! Max size is 10 MB.")
                 else:
                     await ctx.reply("You currently have an image being blurred. Try again later.")
@@ -509,10 +490,8 @@ async def blur(ctx):
             await ctx.reply("Please send a file to blur.")
     except asyncio.TimeoutError:
         await ctx.reply("You did not respond in time.")
-        if os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
-            os.remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
-        if os.path.exists("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)):
-            os.remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+        check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
 
 @bot.command(name = "rusage")
