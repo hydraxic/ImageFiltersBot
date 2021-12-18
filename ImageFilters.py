@@ -25,7 +25,7 @@ import typing
 import asyncio
 import psutil
 
-from mainpoly import main as mainrunp
+from mainpoly import mainfunc as mainrunp
 
 import redis
 
@@ -529,7 +529,7 @@ async def queuePos(ctx):
 async def shutdown(ctx):
     if ctx.author.id == (488730568209465344):
         await ctx.reply("Shutting down...")
-        await bot.logout()
+        await bot.close()
 
 @bot.command(name = "queue_open")
 @commands.cooldown(1, 10, commands.BucketType.user)

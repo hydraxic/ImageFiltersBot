@@ -8,7 +8,7 @@ from polylattice import PolyLattice
 #from colors import palettes
 
 
-def main(pal, intensity, def_res, ps):
+def mainfunc(pal, intensity, def_res, ps):
 
     ## Configurations ##
     #palette = pal#'pastel_forest'
