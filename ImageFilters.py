@@ -502,6 +502,7 @@ async def runwp(ctx):
     mainrunp(rgbval, np.random(5, 60), [1920, 1080], (200, 200))
     if os.path.exists("./renders/wallpaper.jpg"):
         await ctx.send(file = discord.File("./renders/wallpaper.jpg"))
+        check_remove("./renders/wallpaper.jpg")
 
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
