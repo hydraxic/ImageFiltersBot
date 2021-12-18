@@ -25,6 +25,8 @@ import typing
 import asyncio
 import psutil
 
+from mainpoly import main as mainrunp
+
 import redis
 
 #tokens
@@ -493,6 +495,13 @@ async def blur(ctx):
         check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
+
+@bot.command(name = "runwp")
+async def runwp(ctx):
+    rgbval = [list(np.random.choice(range(255), size=3)), list(np.random.choice(range(255), size=3))]
+    mainrunp(rgbval, np.random(5, 60), [1920, 1080], (200, 200))
+    if os.path.exists("./renders/wallpaper.jpg"):
+        await ctx.send(file = discord.File("./renders/wallpaper.jpg"))
 
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
