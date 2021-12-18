@@ -25,7 +25,7 @@ import typing
 import asyncio
 import psutil
 
-from mainpoly import mainfunc as mainrunp
+from mainpoly import mainfunc
 
 import redis
 
@@ -499,7 +499,7 @@ async def blur(ctx):
 @bot.command(name = "runwp")
 async def runwp(ctx):
     rgbval = [list(np.random.choice(range(255), size=3)), list(np.random.choice(range(255), size=3))]
-    mainrunp(rgbval, np.random(5, 60), [1920, 1080], (200, 200))
+    mainfunc(rgbval, np.random(5, 60), [1920, 1080], (200, 200))
     if os.path.exists("./renders/wallpaper.jpg"):
         await ctx.send(file = discord.File("./renders/wallpaper.jpg"))
         check_remove("./renders/wallpaper.jpg")
