@@ -1,6 +1,6 @@
 # ImageFiltersBot
 
-Bot is in v1.02
+Bot is in v1.04.1
 
 Image filters!
 
