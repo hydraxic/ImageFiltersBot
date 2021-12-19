@@ -164,9 +164,11 @@ def trianglify_main(image, userid):
 def sparkle_add(image):
     sparkle_img = Image.open("./stock/sparkle.png")
     w, h = image.size
-    rw, rh = np.random.randint(range(w)), np.ranodm.randint(range(h))
-    image.paste(sparkle_img, (rw, rh))
-    image.save("./renders/s_polypattern.jpg")
+    rw, rh = np.random.randint(0, w), np.random.randint(0, h)
+    rs = np.random.randint(64, w)
+    newimg = sparkle_img.resize((rs, rs), resample = Image.BILINEAR)
+    image.paste(newimg, (rw, rh), newimg)
+    image.save("./renders/s_polypattern.png")
 
 
 # blur functions
@@ -371,13 +373,15 @@ async def pixelate(ctx):
                                 return m.channel == channel and m.author == au
                             return i_check2
                         await ctx.reply("Please send the width and height you would like: <width>, <height>. Example: 32, 32 would mean that the image would have 32 pixels as the width and height.")
-                        msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 30)
+                        msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 60)
                         try:
 
                             try:
-                                uw, uh = int(msg2.content.split(", ")[0]), int(msg2.content.split(", ")[1])
+                                str2 = msg2.content.replace(" ", "")
+                                uw, uh = int(str2.split(",")[0]), int(str2.split(",")[1])
                             except ValueError:
                                 await ctx.reply("Please send the dimensions in the format of width, height.")
+                                check_remove("./userImages/imagePix_{}.png".format(ctx.author.id))
 
                             i = Image.open("./userImages/imagePix_{}.png".format(ctx.author.id))
                             iw, ih = i.size
@@ -436,7 +440,7 @@ async def blur(ctx):
                                     return m.channel == channel and m.author == au
                                 return i_check2
 
-                            msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 15)
+                            msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 60)
                             
                             if msg2.content == "s" or msg2.content == "S":
                                 simple_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id)
@@ -451,7 +455,7 @@ async def blur(ctx):
                                     msg3 = await bot.wait_for("message", check = check3(ctx.author), timeout = 15)
 
                                     if isinstance(int(msg3.content), int):
-                                        if int(msg3.content) > 0:
+                                        if int(msg3.content) > 0 and int(msg3.content) < 100:
                                             box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
@@ -470,7 +474,7 @@ async def blur(ctx):
                                     msg3_2 = await bot.wait_for("message", check = check3_2(ctx.author), timeout = 15)
 
                                     if isinstance(int(msg3_2.content), int):
-                                        if int(msg3_2.content) > 0:
+                                        if int(msg3_2.content) > 0 and int(msg3_2.content) < 100:
                                             gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3_2.content))
                                         else:
                                             await ctx.reply("Please send a number larger than 0.")
@@ -517,12 +521,14 @@ async def polypattern(ctx):
         if isinstance(int(msg.content), int):
             intensity = int(msg.content)
             rgbval = [list(np.random.choice(range(255), size = 3)), list(np.random.choice(range(255), size = 3))]
-            ssa, ssb = np.random.choice(range(500)), np.random.choice(range(500))
-            mainpoly.mainfunc(rgbval, intensity, [1920, 1080], (ssa, ssb))
-            
-            #if os.path.exists("./renders/wallpaper.jpg"):
-                #await ctx.reply(file = discord.File("./renders/wallpaper.jpg"))
-                #check_remove("./renders/wallpaper.jpg")
+            ss = np.random.choice(range(250))
+            mainpoly.mainfunc(rgbval, intensity, [1920, 1080], (ss, ss))
+            if os.path.exists("./renders/polypattern.png"):
+                imgl = Image.open("./renders/polypattern.png")
+                sparkle_add(imgl)
+                await ctx.reply(file = discord.File("./renders/s_polypattern.png"))
+                check_remove("./renders/polypattern.png")
+                check_remove("./renders/s_polypattern.png")
         else:
             await ctx.reply("Please send a number.")
     except asyncio.TimeoutError:

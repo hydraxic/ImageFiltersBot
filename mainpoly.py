@@ -26,7 +26,7 @@ def mainfunc(pal, intensity, def_res, ps):
     render_folder = file_dir + "/renders"
     makedirs(render_folder, exist_ok=True)
 
-    render_file = render_folder + "/wallpaper.jpg"
+    render_file = render_folder + "/polypattern.png"
 
     # Get resolution from program arguments, or use default resolution
     resolution = default_resolution
