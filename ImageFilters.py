@@ -161,6 +161,14 @@ def trianglify_main(image, userid):
     yield "a string for yield"
 
 
+def sparkle_add(image):
+    sparkle_img = Image.open("./stock/sparkle.png")
+    w, h = image.size
+    rw, rh = np.random.randint(range(w)), np.ranodm.randint(range(h))
+    image.paste(sparkle_img, (rw, rh))
+    image.save("./renders/s_polypattern.jpg")
+
+
 # blur functions
 
 def simple_blur(ipath, uid):
@@ -209,8 +217,8 @@ async def on_command_error(ctx, error):
 @bot.command(name = "help")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def helpc(ctx):
-    clist = ["trianglify", "queue", "grayscale", "pixelate"]
-    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images."]
+    clist = ["trianglify", "queue", "grayscale", "pixelate", "blur"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images.", "Blur images. There are three types of blur: simple blur, gaussian blur, and box blur."]
 
     embed = discord.Embed(title = "Help", description = "-------------")
     
@@ -496,14 +504,31 @@ async def blur(ctx):
         check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
 
-@bot.command(name = "runwp")
-async def runwp(ctx):
-    rgbval = [list(np.random.choice(range(255), size=3)), list(np.random.choice(range(255), size=3))]
-    mainpoly.mainfunc(rgbval, np.random.randint(5, 60), [1920, 1080], (200, 200))
-    if os.path.exists("./renders/wallpaper.jpg"):
-        await ctx.send(file = discord.File("./renders/wallpaper.jpg"))
-        check_remove("./renders/wallpaper.jpg")
+@bot.command(name = "polypattern")
+async def polypattern(ctx):
+    channel = ctx.channel
+    await ctx.send("Please send what warp intensity you would like.")
+    def check(au):
+        def check_i(m):
+            return channel == m.channel and m.author == au
+        return check_i
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author))
+        if isinstance(int(msg.content), int):
+            intensity = int(msg.content)
+            rgbval = [list(np.random.choice(range(255), size = 3)), list(np.random.choice(range(255), size = 3))]
+            ssa, ssb = np.random.choice(range(500)), np.random.choice(range(500))
+            mainpoly.mainfunc(rgbval, intensity, [1920, 1080], (ssa, ssb))
+            
+            #if os.path.exists("./renders/wallpaper.jpg"):
+                #await ctx.reply(file = discord.File("./renders/wallpaper.jpg"))
+                #check_remove("./renders/wallpaper.jpg")
+        else:
+            await ctx.reply("Please send a number.")
+    except asyncio.TimeoutError:
+        await ctx.reply("You didn't respond in time.")
 
+    
 @bot.command(name = "rusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def resourceUsage(ctx):
