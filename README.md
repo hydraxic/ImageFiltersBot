@@ -1,6 +1,6 @@
 # ImageFiltersBot
 
-Bot is in v1.04.1
+Bot is in v1.05
 
 Image filters!
 
@@ -11,3 +11,4 @@ Current filters:
 - Grayscale; makes image grayscaled/black and white
 - Pixelate; makes images pixelated
 - Blur; blur images. 3 types of blur: simple, gaussian, and box.
+- Vignette; created vignette for the image.
