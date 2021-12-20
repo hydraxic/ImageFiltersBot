@@ -105,6 +105,18 @@ def antialias(imagepath):
     image.resize((w, h), resample = Image.ANTIALIAS)
     return image
 
+def resize_to_1080_with_aspect_ratio(img):
+    basewidth = 1080
+    wpercent = (basewidth / float(img.size[0]))
+    hsize = int((float(img.size[1]) * float(wpercent)))
+    img = img.resize((basewidth, hsize), Image.ANTIALIAS)
+    return img
+
+def pil_to_opencv(pil_img):
+    #pili = pil_img.convert("RGB")
+    r_img = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+    return r_img
+
 # main function to trianglify images
 
 @to_thread
@@ -214,9 +226,10 @@ def gaussian_blur(ipath, uid, radius):
 #vignette function
 def make_vignette(imagepath, vsize, uid):
     #vsize default 200
-
-    image = cv2.imread(imagepath)
-    #resize if needed. i don't think so though.
+    imagepil = resize_to_1080_with_aspect_ratio(Image.open(imagepath))
+    image = pil_to_opencv(imagepil)
+    #image = cv2.imread(imagepath)
+    #resize if needed. i don't think so though. NEVERMIND YOU DO DEFINITELY
     w, h = image.shape[:2]
     #mask with gaussian
     x_kernel = cv2.getGaussianKernel(h, vsize)
@@ -556,7 +569,7 @@ async def blur(ctx):
 @bot.command(name = "vignette")
 async def vignette(ctx):
     channel = ctx.channel
-    await ctx.reply("Send the file you would like to have a vignette on. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    await ctx.reply("Send the file you would like to have a vignette on. Supported image types: PNG, JPG, JPEG, BMP, SVG. Your image will also be resized to 1080p to prevent errors.")
     def check(au):
         def i_check(m):
             return m.channel == channel and m.author == au
@@ -576,9 +589,13 @@ async def vignette(ctx):
                         msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 60)
                         try:
                             if isinstance(int(msg2.content), int):
-                                make_vignette("./userImages/imageVig_{}.png".format(ctx.author.id), int(msg2.content), ctx.author.id)
-                                if os.path.exists("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)):
-                                    await ctx.reply(file = discord.File("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)))
+                                val = 120 + (int(msg2.content) * 5)
+                                if val > 125:
+                                    make_vignette("./userImages/imageVig_{}.png".format(ctx.author.id), val, ctx.author.id)
+                                    if os.path.exists("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)):
+                                        await ctx.reply(file = discord.File("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)))
+                                else:
+                                    await ctx.reply("Please send a value higher than 125.")
                                 check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
                                 check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
                             else:
