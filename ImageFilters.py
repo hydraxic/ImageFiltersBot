@@ -1,24 +1,35 @@
+# Image Filters Bot v1.04.1
+
+
+
+
 # install extensions
 
+#discord
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import cooldown, BucketType
 
-from PIL import Image, ImageDraw, ImageFilter
+#image
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+import cv2
 import matplotlib.pyplot as plt
 import pygame
 import pygame.gfxdraw
 
+#numbers
 import itertools
 import numpy as np
 import functools
 import math
 
+#advanced math
 from scipy.spatial import Delaunay
 from scipy.ndimage import gaussian_filter
 
 from collections import defaultdict
 
+#tools
 import io
 import os
 import typing
@@ -164,12 +175,24 @@ def trianglify_main(image, userid):
 def sparkle_add(image):
     sparkle_img = Image.open("./stock/sparkle.png")
     w, h = image.size
-    rw, rh = np.random.randint(0, w), np.random.randint(0, h)
-    rs = np.random.randint(64, w)
-    newimg = sparkle_img.resize((rs, rs), resample = Image.BILINEAR)
-    image.paste(newimg, (rw, rh), newimg)
-    image.save("./renders/s_polypattern.png")
+    sw = sparkle_img.size[0]
+    for _ in range(np.random.randint(3, 10)):
+        rs = np.random.randint(64, sw)
+        rr = np.random.randint(0, 360)
+        rw, rh = np.random.randint(rs / 2, w - (rs / 2)), np.random.randint(rs / 2, h - (rs / 2))
+        newimg = sparkle_img.resize((rs, rs), resample = Image.BILINEAR)
+        newRimg = newimg.rotate(rr)
+        image.paste(newRimg, (rw, rh), newRimg)
+    tImg = dad_add(image)
+    tImg.save("./renders/s_polypattern.png")
 
+def dad_add(image):
+    w, h = image.size
+    img = ImageDraw.Draw(image)
+    font = ImageFont.truetype("Gotham_Black_Regular.ttf", 150)
+    fw, fh = img.textsize("Happy Birthday Dad!", font = font)
+    img.text(((w - fw) / 2, (h - fh) / 2), "Happy Birthday Dad!", (255, 255, 255), font = font)
+    return image
 
 # blur functions
 
@@ -187,6 +210,29 @@ def gaussian_blur(ipath, uid, radius):
     img = Image.open(ipath)
     boxblurred = img.filter(ImageFilter.GaussianBlur(radius))
     boxblurred.save("./finishedImages/imageBlurFinished_{}.png".format(uid))
+
+#vignette function
+def make_vignette(imagepath, vsize, uid):
+    #vsize default 200
+
+    image = cv2.imread(imagepath)
+    #resize if needed. i don't think so though.
+    w, h = image.shape[:2]
+    #mask with gaussian
+    x_kernel = cv2.getGaussianKernel(h, vsize)
+    y_kernel = cv2.getGaussianKernel(w, vsize)
+    r_kernel = y_kernel * x_kernel.T
+
+    #mask
+    mask = 255 * r_kernel / np.linalg.norm(r_kernel)
+    out = np.copy(image)
+
+    #apply mask
+    for i in range(3):
+        out[:, :, i] = out[:, :, i] * mask
+    
+    cv2.imwrite("./finishedImages/imageVigFinished_{}.png".format(uid), out)
+
 
 #events
 
@@ -356,7 +402,7 @@ async def grayscale(ctx):
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def pixelate(ctx):
     channel = ctx.channel
-    await ctx.reply("Send the file you would like to be pixelate. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    await ctx.reply("Send the file you would like to be pixelated. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
     def check(au):
         def i_check(m):
             return m.channel == channel and m.author == au
@@ -507,8 +553,56 @@ async def blur(ctx):
         check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
+@bot.command(name = "vignette")
+async def vignette(ctx):
+    channel = ctx.channel
+    await ctx.reply("Send the file you would like to have a vignette on. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    def check(au):
+        def i_check(m):
+            return m.channel == channel and m.author == au
+        return i_check
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+        if msg.attachments:
+            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                if not os.path.exists("./userImages/imageVig_{}.png".format(ctx.author.id)):
+                    await msg.attachments[0].save("./userImages/imageVig_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imageVig_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                        def check2(au):
+                            def i_check2(m):
+                                return m.channel == channel and m.author == au
+                            return i_check2
+                        await ctx.reply("Please send the vignette intensity you want. The higher the number the less intense it is.")
+                        msg2 = await bot.wait_for("message", check = check2(ctx.author), timeout = 60)
+                        try:
+                            if isinstance(int(msg2.content), int):
+                                make_vignette("./userImages/imageVig_{}.png".format(ctx.author.id), int(msg2.content), ctx.author.id)
+                                if os.path.exists("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)):
+                                    await ctx.reply(file = discord.File("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)))
+                                check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
+                                check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
+                            else:
+                                await ctx.reply("Please send a number.")
+                        except asyncio.TimeoutError:
+                            check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
+                            await ctx.reply("You did not respond in time.")
+                    else:
+                        check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
+                        await ctx.reply("File size is too large! Max size is 10 MB.")
+                else:
+                    await ctx.reply("You currently have an image being pixelated. Try again later.")
+            else:
+                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+        if not msg.attachments:
+            await ctx.reply("Please send a file to pixelate.")
+    except asyncio.TimeoutError:
+        check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
+        await ctx.reply("You did not respond in time.")
 
-@bot.command(name = "polypattern")
+
+@bot.command(name = "dad")
 async def polypattern(ctx):
     channel = ctx.channel
     await ctx.send("Please send what warp intensity you would like.")
