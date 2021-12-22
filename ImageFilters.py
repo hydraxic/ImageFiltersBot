@@ -1,4 +1,4 @@
-# Image Filters Bot v1.04.1
+# Image Filters Bot v1.06
 
 
 
@@ -278,14 +278,16 @@ async def on_command_error(ctx, error):
 @bot.command(name = "help")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def helpc(ctx):
-    clist = ["trianglify", "queue", "grayscale", "pixelate", "blur", "vignette"]
-    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images.", "Blur images. There are three types of blur: simple blur, gaussian blur, and box blur.", "Add a vignette to images."]
+    clist = ["trianglify", "queue", "grayscale", "pixelate", "blur", "vignette", "edge"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images.", "Blur images. There are three types of blur: simple blur, gaussian blur, and box blur.", "Add a vignette to images.", "Bring out the edges of an image. You can also use `edges` to run the command."]
 
     embed = discord.Embed(title = "Help", description = "-------------")
     
     for v in clist:
         index = clist.index(v)
         embed.add_field(name = "**{}**".format(v), value = "*{}*".format(cdesc[index]), inline = False)
+
+    embed.set_footer(text = "Use `i <command>` to run a command.")
 
     await ctx.reply(embed = embed)
     
@@ -617,6 +619,50 @@ async def vignette(ctx):
         check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
         await ctx.reply("You did not respond in time.")
+
+@bot.command(aliases = ("edge", "edges"))
+async def edge_det(ctx):
+    channel = ctx.channel
+    await ctx.reply("Send the file you would like its edges to be brought out. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    def check(au):
+        def i_check(m):
+            return m.channel == channel and m.author == au
+        return i_check
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+        if msg.attachments:
+            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                if not os.path.exists("./userImages/imageEdge_{}.png".format(ctx.author.id)):
+                    await msg.attachments[0].save("./userImages/imageEdge_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imageEdge_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                        im = cv2.imread("./userImages/imageEdge_{}.png".format(ctx.author.id))
+                        w, h = im.shape[:2]
+                        edges = cv2.Canny(im, 100, 50)
+                        
+                        pxls = [edges]
+                        imgsave = np.array(pxls)
+                        imgsave = np.reshape(imgsave, (w, h))
+                        imgsave2 = Image.fromarray(imgsave.astype(np.uint8))
+                        imgsave2.save("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
+                        
+                        await ctx.reply(file = discord.File("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id)))
+
+                        check_remove("./userImages/imageEdge_{}.png".format(ctx.author.id))
+                        check_remove("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
+
+                    else:
+                        check_remove("./userImages/imageEdge_{}.png".format(ctx.author.id))
+                        await ctx.reply("File size is too large! Max size is 10 MB.")
+                else:
+                    await ctx.reply("You currently have an image with its edges being brought out. Try again later.")
+            else:
+                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+        if not msg.attachments:
+            await ctx.reply("Please send a file to have its edges brought out.")
+    except asyncio.TimeoutError:
+        await ctx.reply("You did not respond in time.")
+        check_remove("./userImages/imageEdge_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
 
 
 @bot.command(name = "dad")
