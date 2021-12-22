@@ -278,8 +278,8 @@ async def on_command_error(ctx, error):
 @bot.command(name = "help")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def helpc(ctx):
-    clist = ["trianglify", "queue", "grayscale", "pixelate", "blur"]
-    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images.", "Blur images. There are three types of blur: simple blur, gaussian blur, and box blur."]
+    clist = ["trianglify", "queue", "grayscale", "pixelate", "blur", "vignette"]
+    cdesc = ["Turn an image into a triangle pattern of it.", "See what place in the queue you are for trianglification.", "Turn images into black and white.", "Pixelate images.", "Blur images. There are three types of blur: simple blur, gaussian blur, and box blur.", "Add a vignette to images."]
 
     embed = discord.Embed(title = "Help", description = "-------------")
     
@@ -595,7 +595,7 @@ async def vignette(ctx):
                                     if os.path.exists("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)):
                                         await ctx.reply(file = discord.File("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id)))
                                 else:
-                                    await ctx.reply("Please send a value higher than 125.")
+                                    await ctx.reply("Please send a value higher than 0.")
                                 check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
                                 check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
                             else:
@@ -608,11 +608,11 @@ async def vignette(ctx):
                         check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
                         await ctx.reply("File size is too large! Max size is 10 MB.")
                 else:
-                    await ctx.reply("You currently have an image being pixelated. Try again later.")
+                    await ctx.reply("You currently have an image with a vignette being added onto. Try again later.")
             else:
                 await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
         if not msg.attachments:
-            await ctx.reply("Please send a file to pixelate.")
+            await ctx.reply("Please send a file to add a vignette onto.")
     except asyncio.TimeoutError:
         check_remove("./userImages/imageVig_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageVigFinished_{}.png".format(ctx.author.id))
