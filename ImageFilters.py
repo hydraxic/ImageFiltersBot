@@ -1,4 +1,4 @@
-# Image Filters Bot v1.06
+# Image Filters Bot v1.07
 
 
 
