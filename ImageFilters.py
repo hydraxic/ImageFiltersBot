@@ -54,6 +54,13 @@ grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
 status = "use: i help"
 warning_loopt = itertools.cycle(["!", "¡"])
 
+# OPEN CV KERNELS
+
+sharpen_kernel = np.array([[0, -1, 0], 
+[-1, 5, -1],
+[0, -1, 0]])
+
+
 # bot setup
 
 intents = discord.Intents(messages = True, members = True, guilds = True)
@@ -664,6 +671,54 @@ async def edge_det(ctx):
         check_remove("./userImages/imageEdge_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
 
+@bot.command(name = "sharpen")
+async def sharpen(ctx):
+    channel = ctx.channel
+    await ctx.reply("Send the file you would like to sharpen. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+    def check(au):
+        def i_check(m):
+            return m.channel == channel and m.author == au
+        return i_check
+    try:
+        msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+        if msg.attachments:
+            if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                if not os.path.exists("./userImages/imageSharpen_{}.png".format(ctx.author.id)):
+                    await msg.attachments[0].save("./userImages/imageSharpen_{}.png".format(ctx.author.id))
+                    if os.stat("./userImages/imageSharpen_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                        im = cv2.imread("./userImages/imageSharpen_{}.png".format(ctx.author.id), flags = cv2.IMREAD_COLOR)
+                        sharp_f = cv2.filter2D(src = im, ddepth = -1, kernel = sharpen_kernel)
+
+                        cv2.imwrite("./finishedImages/imageSharpenFinished_{}.png".format(ctx.author.id), sharp_f)
+
+                        await ctx.reply(file = discord.File("./finishedImages/imageSharpenFinished_{}.png".format(ctx.author.id)))
+
+                        check_remove("./userImages/imageSharpen_{}.png".format(ctx.author.id))
+                        check_remove("./finishedImages/imageSharpenFinished_{}.png".format(ctx.author.id))
+
+                    else:
+                        check_remove("./userImages/imageSharpen_{}.png".format(ctx.author.id))
+                        await ctx.reply("File size is too large! Max size is 10 MB.")
+                else:
+                    await ctx.reply("You currently have an image being sharpened. Try again later.")
+            else:
+                await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+        if not msg.attachments:
+            await ctx.reply("Please send a file to sharpen.")
+    except asyncio.TimeoutError:
+        await ctx.reply("You did not respond in time.")
+        check_remove("./userImages/imageSharpen_{}.png".format(ctx.author.id))
+        check_remove("./finishedImages/imageSharpenFinished_{}.png".format(ctx.author.id))
+
+'''
+@bot.group()
+async def filter(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send("Invalid colour.")
+    
+@filter.command()
+async def 
+'''
 
 @bot.command(name = "dad")
 async def polypattern(ctx):
