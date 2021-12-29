@@ -9,6 +9,8 @@
 import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import cooldown, BucketType
+from discord import ButtonStyle
+from discord.ui import Button, View
 
 #image
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -51,7 +53,7 @@ AUTH_TOKEN = str(redis_server.get('AUTH_TOKEN').decode('utf-8'))
 queue = []
 queue_open = open("./queue_open/value.txt", "r")
 grayscale_array = [0.2126, 0.7152, 0.0722] #red, green, and blue
-status = "use: i help"
+status = "use: !i help"
 warning_loopt = itertools.cycle(["!", "¡"])
 
 # OPEN CV KERNELS
@@ -64,7 +66,7 @@ sharpen_kernel = np.array([[0, -1, 0],
 # bot setup
 
 intents = discord.Intents(messages = True, members = True, guilds = True)
-bot = commands.Bot(command_prefix = ["i ", "I "], intents = intents, case_insensitive = True, help_command = None)
+bot = commands.Bot(command_prefix = ["!i ", "!I "], intents = intents, case_insensitive = True, help_command = None)
 
 #functions
 
@@ -258,7 +260,7 @@ def make_vignette(imagepath, vsize, uid):
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity = discord.Game(status))
+    await bot.change_presence(activity = discord.Activity(name = f"{len(bot.guilds)} servers | use !i help", type = discord.ActivityType.watching))
     print("{} has started.".format(bot.user.name))
 
     for v in os.listdir("./userImages"):
@@ -280,6 +282,160 @@ async def on_command_error(ctx, error):
     else:
         raise(error)
 
+# command classes
+
+class blurClassView(View):
+    
+    def __init__(self, ctx):
+        super().__init__(timeout = 30)
+        self.ctx = ctx
+
+    @discord.ui.button(label = "simple", style = ButtonStyle.blurple)
+    async def b_cb_s(self, button, inter):
+        ctx = self.ctx
+        channel = ctx.channel
+        await inter.response.edit_message(content = "Send the file you would like to be blurred. Supported image types: PNG, JPG, JPEG, BMP, SVG.", view = None)
+        def check(au):
+            def i_check(m):
+                return m.channel == channel and m.author == au
+            return i_check
+        try:
+            msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+            if msg.attachments:
+                if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                    if not os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
+                        await msg.attachments[0].save("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                        if os.stat("./userImages/imageBlur_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                            simple_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id)
+                            await ctx.send(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlur_{}.png".format(ctx.author.id))
+                        else:
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            await ctx.reply("File size is too large! Max size is 10 MB.")
+                    else:
+                        await ctx.reply("You currently have an image being blurred. Try again later.")
+                else:
+                    await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+            if not msg.attachments:
+                await ctx.reply("Please send a file to blur.")
+        except asyncio.TimeoutError:
+            await ctx.reply("You did not respond in time.")
+            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+    
+    @discord.ui.button(label = "gaussian", style = ButtonStyle.blurple)
+    async def b_cb_g(self, button, inter):
+        ctx = self.ctx
+        channel = ctx.channel
+        await inter.response.edit_message(content = "Send the file you would like to be blurred. Supported image types: PNG, JPG, JPEG, BMP, SVG.", view = None)
+        def check(au):
+            def i_check(m):
+                return m.channel == channel and m.author == au
+            return i_check
+        try:
+            msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+            if msg.attachments:
+                if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                    if not os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
+                        await msg.attachments[0].save("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                        if os.stat("./userImages/imageBlur_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                            await ctx.send(content = "What blur intensity would you like? (1 - 99)")
+                            def check_g(au):
+                                def i_check_g(m):
+                                    return m.channel == channel and m.author == au
+                                return i_check_g
+                            try:
+                                msg_g = await bot.wait_for("message", check = check_g(ctx.author), timeout = 30)
+                                if isinstance(int(msg_g.content), int):
+                                    if int(msg_g.content) > 0 and int(msg_g.content) < 100:
+                                        gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg_g.content))
+                                    else:
+                                        await ctx.reply("Please send a number larger than 0 and less than 100.")
+                                        check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                        return
+                            except ValueError:
+                                await ctx.reply("Please send a number.")
+                            await ctx.send(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlur_{}.png".format(ctx.author.id))
+                        else:
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            await ctx.reply("File size is too large! Max size is 10 MB.")
+                    else:
+                        await ctx.reply("You currently have an image being blurred. Try again later.")
+                else:
+                    await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+            if not msg.attachments:
+                await ctx.reply("Please send a file to blur.")
+        except asyncio.TimeoutError:
+            await ctx.reply("You did not respond in time.")
+            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+
+    @discord.ui.button(label = "box", style = ButtonStyle.blurple)
+    async def b_cb_b(self, button, inter):
+        ctx = self.ctx
+        channel = ctx.channel
+        await inter.response.edit_message(content = "Send the file you would like to be blurred. Supported image types: PNG, JPG, JPEG, BMP, SVG.", view = None)
+        def check(au):
+            def i_check(m):
+                return m.channel == channel and m.author == au
+            return i_check
+        try:
+            msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+            if msg.attachments:
+                if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                    if not os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
+                        await msg.attachments[0].save("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                        if os.stat("./userImages/imageBlur_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                            await ctx.send(content = "What blur intensity would you like? (1 - 99)", view = None)
+                            def check_b(au):
+                                def i_check_b(m):
+                                    return m.channel == channel and m.author == au
+                                return i_check_b
+                            try:
+                                msg_b = await bot.wait_for("message", check = check_b(ctx.author), timeout = 30)
+                                if isinstance(int(msg_b.content), int):
+                                    if int(msg_b.content) > 0 and int(msg_b.content) < 100:
+                                        box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg_b.content))
+                                    else:
+                                        await ctx.reply("Please send a number larger than 0 and less than 100.")
+                                        check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                        return
+                            except ValueError:
+                                await ctx.reply("Please send a number.")
+                            await ctx.send(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlur_{}.png".format(ctx.author.id))
+                        else:
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            await ctx.reply("File size is too large! Max size is 10 MB.")
+                    else:
+                        await ctx.reply("You currently have an image being blurred. Try again later.")
+                else:
+                    await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+            if not msg.attachments:
+                await ctx.reply("Please send a file to blur.")
+        except asyncio.TimeoutError:
+            await ctx.reply("You did not respond in time.")
+            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+    
+    async def interaction_check(self, inter) -> bool:
+        if inter.user == self.ctx.author:
+            return True
+        else:
+            await inter.response.send_message("You can only interact with a message sent to you.", ephemeral = True)
+            return False
+
+    async def on_timeout(self):
+        await self.ctx.send("You ran out of time.")
+
+
+
+
+
 #commands
 
 @bot.command(name = "help")
@@ -294,7 +450,7 @@ async def helpc(ctx):
         index = clist.index(v)
         embed.add_field(name = "**{}**".format(v), value = "*{}*".format(cdesc[index]), inline = False)
 
-    embed.set_footer(text = "Use `i <command>` to run a command.")
+    embed.set_footer(text = "Use `!i <command>` to run a command.")
 
     await ctx.reply(embed = embed)
     
@@ -526,7 +682,7 @@ async def blur(ctx):
                                         if int(msg3.content) > 0 and int(msg3.content) < 100:
                                             box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3.content))
                                         else:
-                                            await ctx.reply("Please send a number larger than 0.")
+                                            await ctx.reply("Please send a number larger than 0 and less than 100.")
                                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                                             return
                                 except ValueError:
@@ -545,7 +701,7 @@ async def blur(ctx):
                                         if int(msg3_2.content) > 0 and int(msg3_2.content) < 100:
                                             gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg3_2.content))
                                         else:
-                                            await ctx.reply("Please send a number larger than 0.")
+                                            await ctx.reply("Please send a number larger than 0 and less than 100.")
                                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                                             return
                                 except ValueError:
@@ -576,6 +732,7 @@ async def blur(ctx):
         check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "vignette")
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def vignette(ctx):
     channel = ctx.channel
     await ctx.reply("Send the file you would like to have a vignette on. Supported image types: PNG, JPG, JPEG, BMP, SVG. Your image will also be resized to 1080p to prevent errors.")
@@ -628,6 +785,7 @@ async def vignette(ctx):
         await ctx.reply("You did not respond in time.")
 
 @bot.command(aliases = ("edge", "edges"))
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def edge_det(ctx):
     channel = ctx.channel
     await ctx.reply("Send the file you would like its edges to be brought out. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
@@ -672,6 +830,7 @@ async def edge_det(ctx):
         check_remove("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
 
 @bot.command(name = "sharpen")
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def sharpen(ctx):
     channel = ctx.channel
     await ctx.reply("Send the file you would like to sharpen. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
@@ -710,15 +869,104 @@ async def sharpen(ctx):
         check_remove("./userImages/imageSharpen_{}.png".format(ctx.author.id))
         check_remove("./finishedImages/imageSharpenFinished_{}.png".format(ctx.author.id))
 
-'''
-@bot.group()
-async def filter(ctx):
-    if ctx.invoked_subcommand is None:
-        await ctx.send("Invalid colour.")
-    
-@filter.command()
-async def 
-'''
+@bot.command(name = "blur_bTest")
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def blur_bTest(ctx):
+    '''channel = ctx.channel
+
+    b_s = Button(label = "simple", style = ButtonStyle.blurple)
+    b_g = Button(label = "gaussian", style = ButtonStyle.blurple)
+    b_b = Button(label = "box", style = ButtonStyle.blurple)
+
+    async def b_cb(inter, btype):
+        await inter.response.edit_message(content = "Send the file you would like to be blurred. Supported image types: PNG, JPG, JPEG, BMP, SVG.")
+        def check(au):
+            def i_check(m):
+                return m.channel == channel and m.author == au
+            return i_check
+        try:
+            msg = await bot.wait_for("message", check = check(ctx.author), timeout = 60)
+            if msg.attachments:
+                if msg.attachments[0].filename.lower().endswith("png") or msg.attachments[0].filename.lower().endswith("jpg") or msg.attachments[0].filename.lower().endswith("jpeg") or msg.attachments[0].filename.lower().endswith("bmp") or msg.attachments[0].filename.lower().endswith("svg"):
+                    if not os.path.exists("./userImages/imageBlur_{}.png".format(ctx.author.id)):
+                        await msg.attachments[0].save("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                        if os.stat("./userImages/imageBlur_{}.png".format(ctx.author.id)).st_size <= 10000000:
+                            if btype == 0:
+                                simple_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id)
+                            if btype == 1:
+                                await inter.response.edit_message(content = "What blur intensity would you like? (1 - 99)", view = None)
+                                def check_g(au):
+                                    def i_check_g(m):
+                                        return m.channel == channel and m.author == au
+                                    return i_check_g
+                                try:
+                                    msg_g = await bot.wait_for("message", check = check_g(ctx.author), timeout = 30)
+                                    if isinstance(int(msg_g.content), int):
+                                        if int(msg_g.content) > 0 and int(msg_g.content) < 100:
+                                            gaussian_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg_g.content))
+                                        else:
+                                            await ctx.reply("Please send a number larger than 0 and less than 100.")
+                                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                            return
+                                except ValueError:
+                                    await ctx.reply("Please send a number.")
+                            if btype == 2:
+                                await inter.response.edit_message(content = "What intensity would you like? (1 - 99)", view = None)
+                                def check_b(au):
+                                    def i_check_b(m):
+                                        return m.channel == channel and m.author == au
+                                    return i_check_b
+                                try:
+                                    msg_b = await bot.wait_for("message", check = check_b(ctx.author), timeout = 30)
+                                    if isinstance(int(msg_b.content), int):
+                                        if int(msg_b.content) > 0 and int(msg_b.content) < 100:
+                                            box_blur("./userImages/imageBlur_{}.png".format(ctx.author.id), ctx.author.id, int(msg_b.content))
+                                        else:
+                                            await ctx.reply("Please send a number larger than 0 and less than 100.")
+                                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                                            return
+                                except ValueError:
+                                    await ctx.reply("Please send a number.")
+                        else:
+                            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+                            await ctx.reply("File size is too large! Max size is 10 MB.")
+                    else:
+                        await ctx.reply("You currently have an image being blurred. Try again later.")
+                else:
+                    await ctx.reply("Please send a PNG, JPG, JPEG, BMP, or SVG file.")
+            if not msg.attachments:
+                await ctx.reply("Please send a file to blur.")
+        except asyncio.TimeoutError:
+            await ctx.reply("You did not respond in time.")
+            check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
+            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
+        
+    b_s.callback = b_cb(0)
+    b_g.callback = b_cb(1)
+    b_b.callback = b_cb(2)
+
+    v = View()
+    v.add_item(b_s)
+    v.add_item(b_g)
+    v.add_item(b_b)
+    await ctx.send("Which type of blur would you like?", view = v)'''
+
+    v = blurClassView(ctx)
+    await ctx.send("Which type of blur would you like?", view = v)
+
+
+@bot.command(name = "btest")
+async def btest(ctx):
+    b = Button(label = "TestButton", style = ButtonStyle.blurple)
+
+    async def b_cb(inter):
+        await inter.response.edit_message(content = "Clicked", view = None)
+
+    b.callback = b_cb
+
+    v = View()
+    v.add_item(b)
+    await ctx.send("test", view = v)
 
 @bot.command(name = "dad")
 async def polypattern(ctx):
