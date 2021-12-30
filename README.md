@@ -13,3 +13,4 @@ Current filters:
 - Blur; blur images. 3 types of blur: simple, gaussian, and box.
 - Vignette; created vignette for the image.
 - Edge; brings out edges of images.
+- Sharpen; sharpens images
