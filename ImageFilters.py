@@ -282,12 +282,19 @@ async def on_command_error(ctx, error):
     else:
         raise(error)
 
+#guild join update status
+
+@bot.event
+async def on_guild_join(g):
+    await bot.change_presence(activity = discord.Activity(name = f"{len(bot.guilds)} servers | use !i help", type = discord.ActivityType.watching))
+
+
 # command classes
 
 class blurClassView(View):
     
     def __init__(self, ctx):
-        super().__init__(timeout = 30)
+        super().__init__()
         self.ctx = ctx
 
     @discord.ui.button(label = "simple", style = ButtonStyle.blurple)
@@ -358,7 +365,7 @@ class blurClassView(View):
                                 await ctx.reply("Please send a number.")
                             await ctx.send(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
-                            check_remove("./finishedImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
                         else:
                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                             await ctx.reply("File size is too large! Max size is 10 MB.")
@@ -407,7 +414,7 @@ class blurClassView(View):
                                 await ctx.reply("Please send a number.")
                             await ctx.send(file = discord.File("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id)))
                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
-                            check_remove("./finishedImages/imageBlur_{}.png".format(ctx.author.id))
+                            check_remove("./finishedImages/imageBlurFinished_{}.png".format(ctx.author.id))
                         else:
                             check_remove("./userImages/imageBlur_{}.png".format(ctx.author.id))
                             await ctx.reply("File size is too large! Max size is 10 MB.")
@@ -428,9 +435,6 @@ class blurClassView(View):
         else:
             await inter.response.send_message("You can only interact with a message sent to you.", ephemeral = True)
             return False
-
-    async def on_timeout(self):
-        await self.ctx.send("You ran out of time.")
 
 
 
