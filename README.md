@@ -1,6 +1,6 @@
 # ImageFiltersBot
 
-Bot is in v1.06
+Bot is in v1.07
 
 Image filters!
 
@@ -13,3 +13,4 @@ Current filters:
 - Blur; blur images. 3 types of blur: simple, gaussian, and box.
 - Vignette; created vignette for the image.
 - Edge; brings out edges of images.
+- Sharpen; sharpens images
