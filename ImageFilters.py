@@ -16,6 +16,7 @@ import cv2
 import matplotlib.pyplot as plt
 import pygame
 import pygame.gfxdraw
+from colourlovers import ColourLovers
 
 #numbers
 import itertools
@@ -58,6 +59,8 @@ warning_loopt = itertools.cycle(["!", "¡"])
 
 intents = discord.Intents(messages = True, members = True, guilds = True)
 bot = commands.Bot(command_prefix = ["i ", "I "], intents = intents, case_insensitive = True, help_command = None)
+
+cl = ColourLovers()
 
 #functions
 
@@ -665,7 +668,7 @@ async def edge_det(ctx):
         check_remove("./finishedImages/imageEdgeFinished_{}.png".format(ctx.author.id))
 
 
-@bot.command(name = "dad")
+@bot.command(name = "unusedpolypattern")
 async def polypattern(ctx):
     channel = ctx.channel
     await ctx.send("Please send what warp intensity you would like.")
@@ -691,8 +694,12 @@ async def polypattern(ctx):
     except asyncio.TimeoutError:
         await ctx.reply("You didn't respond in time.")
 
-    
-@bot.command(name = "rusage")
+@bot.command(name = "randompalette")
+async def paletteRandom(ctx):
+    random_palette = cl.palettes("random")
+
+
+@bot.command(name = "resourceusage")
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def resourceUsage(ctx):
     r = "CPU percent usage: {}%\nCPU speed: about {} GHz\nRAM percent usage: {}%\nTotal RAM used: about {} GB\nTotal RAM: about {} GB".format(psutil.cpu_percent(4), round(psutil.cpu_freq().current/1000, 1), psutil.virtual_memory()[2], round(psutil.virtual_memory()[3]/1000000000, 2), round(psutil.virtual_memory()[0]/1000000000))
